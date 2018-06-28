@@ -25,7 +25,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.support.annotation.FloatRange;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
@@ -36,15 +35,14 @@ public class ShadowLayout extends FrameLayout {
 
     // Default shadow values
     private final static float DEFAULT_SHADOW_RADIUS = 30.0F;
-    private final static float DEFAULT_SHADOW_DISTANCE = 15.0F;
-    private final static float DEFAULT_SHADOW_ANGLE = 45.0F;
+    private final static float DEFAULT_SHADOW_DX = 15.0F;
+    private final static float DEFAULT_SHADOW_DY = 15.0F;
+    private final static float DEFAULT_SHADOW_SPREAD = 0F;
     private final static int DEFAULT_SHADOW_COLOR = Color.DKGRAY;
 
     // Shadow bounds values
     private final static int MAX_ALPHA = 255;
-    private final static float MAX_ANGLE = 360.0F;
     private final static float MIN_RADIUS = 0.1F;
-    private final static float MIN_ANGLE = 0.0F;
     // Shadow paint
     private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG) {
         {
@@ -66,11 +64,12 @@ public class ShadowLayout extends FrameLayout {
     // Shadow variables
     private int mShadowColor;
     private int mShadowAlpha;
-    private float mShadowRadius;
-    private float mShadowDistance;
-    private float mShadowAngle;
+    private float mShadowRadius; //blur
     private float mShadowDx;
     private float mShadowDy;
+    private float mShadowSpread; //spread 是0 的时候 就是100%一比一显示，     负数是缩小   正数是放大
+    private int mWidthSpread;    //在宽度上的放大/縮小范围
+    private int mHeightSpread;   //在高度上的放大/縮小范围
 
     public ShadowLayout(final Context context) {
         this(context, null);
@@ -90,38 +89,13 @@ public class ShadowLayout extends FrameLayout {
         final TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.ShadowLayout);
         try {
             setIsShadowed(typedArray.getBoolean(R.styleable.ShadowLayout_sl_shadowed, true));
-            setShadowRadius(
-                    typedArray.getDimension(
-                            R.styleable.ShadowLayout_sl_shadow_radius, DEFAULT_SHADOW_RADIUS
-                    )
-            );
-            setShadowDistance(
-                    typedArray.getDimension(
-                            R.styleable.ShadowLayout_sl_shadow_distance, DEFAULT_SHADOW_DISTANCE
-                    )
-            );
-            setShadowAngle(
-                    typedArray.getInteger(
-                            R.styleable.ShadowLayout_sl_shadow_angle, (int) DEFAULT_SHADOW_ANGLE
-                    )
-            );
-            setShadowColor(
-                    typedArray.getColor(
-                            R.styleable.ShadowLayout_sl_shadow_color, DEFAULT_SHADOW_COLOR
-                    )
-            );
+            setShadowRadius(typedArray.getDimension(R.styleable.ShadowLayout_sl_shadow_radius, DEFAULT_SHADOW_RADIUS));
+            setShadowDx(typedArray.getDimension(R.styleable.ShadowLayout_sl_shadow_dx, DEFAULT_SHADOW_DX));
+            setShadowDy(typedArray.getDimension(R.styleable.ShadowLayout_sl_shadow_dy, DEFAULT_SHADOW_DY));
+            setShadowSpread(typedArray.getDimension(R.styleable.ShadowLayout_sl_shadow_spread, DEFAULT_SHADOW_SPREAD));
+            setShadowColor(typedArray.getColor(R.styleable.ShadowLayout_sl_shadow_color, DEFAULT_SHADOW_COLOR));
         } finally {
             typedArray.recycle();
-        }
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        // Clear shadow bitmap
-        if (mBitmap != null) {
-            mBitmap.recycle();
-            mBitmap = null;
         }
     }
 
@@ -132,25 +106,6 @@ public class ShadowLayout extends FrameLayout {
     public void setIsShadowed(final boolean isShadowed) {
         mIsShadowed = isShadowed;
         postInvalidate();
-    }
-
-    public float getShadowDistance() {
-        return mShadowDistance;
-    }
-
-    public void setShadowDistance(final float shadowDistance) {
-        mShadowDistance = shadowDistance;
-        resetShadow();
-    }
-
-    public float getShadowAngle() {
-        return mShadowAngle;
-    }
-
-    @FloatRange
-    public void setShadowAngle(@FloatRange(from = MIN_ANGLE, to = MAX_ANGLE) final float shadowAngle) {
-        mShadowAngle = Math.max(MIN_ANGLE, Math.min(shadowAngle, MAX_ANGLE));
-        resetShadow();
     }
 
     public float getShadowRadius() {
@@ -181,19 +136,48 @@ public class ShadowLayout extends FrameLayout {
         return mShadowDx;
     }
 
+    public void setShadowDx(float mShadowDx) {
+        this.mShadowDx = mShadowDx;
+        resetShadow();
+    }
+
     public float getShadowDy() {
         return mShadowDy;
     }
 
+    public void setShadowDy(float mShadowDy) {
+        this.mShadowDy = mShadowDy;
+        resetShadow();
+    }
+
+    public float getShadowSpread() {
+        return mShadowSpread;
+    }
+
+    public void setShadowSpread(float mShadowSpread) {
+        this.mShadowSpread = mShadowSpread;
+
+        resetShadow();
+    }
+
     // Reset shadow layer
     private void resetShadow() {
-        // Detect shadow axis offset
-        mShadowDx = (float) ((mShadowDistance) * Math.cos(mShadowAngle / 180.0F * Math.PI));
-        mShadowDy = (float) ((mShadowDistance) * Math.sin(mShadowAngle / 180.0F * Math.PI));
-
+        //compute spread range
+        mWidthSpread = (int) (2 * mShadowSpread);
+        mHeightSpread = (int) (2 * mShadowSpread);
+        if (mShadowDx == 0){
+            mHeightSpread = (int) mShadowSpread;
+        }
+        if (mShadowDy == 0){
+            mWidthSpread = (int) mShadowSpread;
+        }
         // Set padding for shadow bitmap
-        final int padding = (int) (mShadowDistance + mShadowRadius);
-        setPadding(padding, padding, padding, padding);
+        int expandSpreadWidth = mWidthSpread > 0 ? mWidthSpread : 0;
+        int expandSpreadHeight = mHeightSpread > 0 ? mHeightSpread : 0;
+        final int paddingLeftAndRight = (int) (Math.abs(mShadowDx) + mShadowRadius + expandSpreadWidth);
+        final int paddingTopAndBottom = (int) (Math.abs(mShadowDy) + mShadowRadius + expandSpreadHeight);
+
+        setPadding(paddingLeftAndRight, paddingTopAndBottom, paddingLeftAndRight, paddingTopAndBottom);
         requestLayout();
     }
 
@@ -230,9 +214,7 @@ public class ShadowLayout extends FrameLayout {
                 // If bounds is zero
                 if (mBounds.width() != 0 && mBounds.height() != 0) {
                     // Reset bitmap to bounds
-                    mBitmap = Bitmap.createBitmap(
-                            mBounds.width(), mBounds.height(), Bitmap.Config.ARGB_8888
-                    );
+                    mBitmap = Bitmap.createBitmap(mBounds.width(), mBounds.height(), Bitmap.Config.ARGB_8888);
                     // Canvas reset
                     mCanvas.setBitmap(mBitmap);
 
@@ -264,11 +246,24 @@ public class ShadowLayout extends FrameLayout {
             // Reset alpha to draw child with full alpha
             mPaint.setColor(adjustShadowAlpha(true));
             // Draw shadow bitmap
-            if (mCanvas != null && mBitmap != null && !mBitmap.isRecycled())
-                canvas.drawBitmap(mBitmap, 0.0F, 0.0F, mPaint);
+            if (mCanvas != null && mBitmap != null && !mBitmap.isRecycled()) {
+                Rect rect = new Rect(-mWidthSpread, -mHeightSpread, mBounds.width() + mWidthSpread, mBounds.height() + mHeightSpread);
+                canvas.drawBitmap(mBitmap, null,  rect, mPaint);
+            }
         }
 
         // Draw child`s
         super.dispatchDraw(canvas);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        // Clear shadow bitmap
+        //
+        //if (mBitmap != null) {
+        //    mBitmap.recycle();
+        //    mBitmap = null;
+        //}
     }
 }

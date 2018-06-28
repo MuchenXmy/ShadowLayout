@@ -19,9 +19,9 @@
         <com.gigamole.library.ShadowLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:sl_shadow_angle="45"
             app:sl_shadow_color="#9e000000"
-            app:sl_shadow_distance="4dp"
+            app:sl_shadow_dx="4dp"
+            app:sl_shadow_dy="4dp"
             app:sl_shadow_radius="4dp">
 
             <ImageView
@@ -45,9 +45,9 @@
         <com.gigamole.library.ShadowLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:sl_shadow_angle="45"
             app:sl_shadow_color="#4ea3e8"
-            app:sl_shadow_distance="3dp"
+            app:sl_shadow_dx="3dp"
+            app:sl_shadow_dy="3dp"
             app:sl_shadow_radius="5dp">
 
             <LinearLayout
@@ -112,68 +112,23 @@
                     </LinearLayout>
 
                 </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <ImageView
-                            android:layout_width="140dp"
-                            android:layout_height="140dp"
-                            android:adjustViewBounds="true"
-                            android:src="@drawable/ic_development"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Development"
-                            android:typeface="sans"
-                            android:textColor="#3d80b9"
-                            android:textSize="18sp"/>
-
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="24dp"
-                        android:layout_height="0dp"/>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <ImageView
-                            android:layout_width="140dp"
-                            android:layout_height="140dp"
-                            android:adjustViewBounds="true"
-                            android:src="@drawable/ic_qa"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="QA"
-                            android:typeface="sans"
-                            android:textColor="#3d80b9"
-                            android:textSize="18sp"/>
-
-                    </LinearLayout>
-
-                </LinearLayout>
             </LinearLayout>
         </com.gigamole.library.ShadowLayout>
-
+        <com.gigamole.library.ShadowLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:sl_shadow_dy="5dp"
+            app:sl_shadow_dx="0dp"
+            app:sl_shadow_radius="5dp"
+            app:sl_shadow_spread="-5dp"
+            app:sl_shadowed="true"
+            app:sl_shadow_color="#4ea3e8">
+            <ImageView
+                android:layout_gravity="center_horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="140dp"
+                android:src="@mipmap/ic_launcher"/>
+        </com.gigamole.library.ShadowLayout>
     </LinearLayout>
 
 </FrameLayout>

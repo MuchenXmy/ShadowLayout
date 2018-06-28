@@ -3,8 +3,9 @@
 
     <declare-styleable name="ShadowLayout">
         <attr name="sl_shadowed" format="boolean"/>
-        <attr name="sl_shadow_distance" format="dimension"/>
-        <attr name="sl_shadow_angle" format="integer"/>
+        <attr name="sl_shadow_dx" format="dimension"/>
+        <attr name="sl_shadow_dy" format="dimension"/>
+        <attr name="sl_shadow_spread" format="dimension"/>
         <attr name="sl_shadow_radius" format="dimension"/>
         <attr name="sl_shadow_color" format="color"/>
     </declare-styleable>
